@@ -153,7 +153,7 @@ Check before you carry on again ...
    
    - Interactions?
    
-* In this session, we only discuss the single factor analysis
+* In this session, we will only discuss the single factor analysis
    
    
 
@@ -398,6 +398,7 @@ plotDispEsts(dds)
 
 ![plot of chunk unnamed-chunk-11](Practical_ShortRNAseq-figure/unnamed-chunk-11-1.png)
 
+
 DESeq function - nbinomWaldTest()
 ========================================================
 3- **Hypothesis test for differential expression**
@@ -531,6 +532,7 @@ head(resAnnotated)
 # change the column name
 colnames(resAnnotated)[1]<-"ensembl_gene_id"
 ```
+
 Add Gene symbol (Continued)
 ========================================================
 
@@ -650,6 +652,13 @@ Solutions
 =========================================================
 
 * [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_BasicDifferentialAnalysis.html)
+
+
+
+Coffee break
+=========================================================
+
+11:30-11:45
 
 
 Transformation of count data
@@ -812,41 +821,6 @@ library(ggplot2)
 ggsave(file="PCA_plot_version1.png")
 ```
 
-Principal component analysis of the samples 
-========================================================
-
-
-```r
-library(RColorBrewer)
-
-# Creates nice looking color palettes
-showcols <- brewer.pal(8, "Set1")[1:length(unique(colData(dds)$Group))]
-
-data <- plotPCA(rld, intgroup="Group", returnData=TRUE)
-percentVar <- round(100 * attr(data, "percentVar"))
-```
-
-  attr function gets the named attribute of an object.
-  Here, gets the percent variation from data object.
-
-
-PCA of the samples 
-========================================================
-
-
-```r
-ggplot(data, aes(PC1, PC2,label=colData(dds)$name))+
-  geom_text(col=showcols[colData(dds)$Group],                                                                                                alpha=0.8,size=4)+
-  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
-  ylab(paste0("PC2: ",percentVar[2],"% variance"))
-```
-
-![plot of chunk unnamed-chunk-31](Practical_ShortRNAseq-figure/unnamed-chunk-31-1.png)
-
-```r
-ggsave(file="PCA_plot_version2.png")
-```
-
 
 Exercises
 =========================================================
@@ -914,282 +888,6 @@ low counts [2]   : 5493, 24%
 
 
 
-
-Multi factor designs
-========================================================
-Experiments  with  more  than  one  factor  influencing  the  counts  can  be  analyzed  using  design  formula  that  include  the  additional  variables. 
-
-
-```r
-targets
-```
-
-```
-  Sample Group Batch        InputFile       InputFile2 OutputFile
-1   Viv1   Viv     a SRR2001243.fastq SRR2001244.fastq   Viv1.bam
-2   Viv2   Viv     b SRR2001245.fastq SRR2001246.fastq   Viv2.bam
-3   Viv3   Viv     c SRR2001247.fastq SRR2001248.fastq   Viv3.bam
-4   Hfd1   Hfd     a SRR2001249.fastq SRR2001250.fastq   Hfd1.bam
-5   Hfd2   Hfd     b SRR2001251.fastq SRR2001252.fastq   Hfd2.bam
-6   Hfd3   Hfd     c SRR2001253.fastq SRR2001254.fastq   Hfd3.bam
-```
-
-
-
-========================================================
-
-
-```r
-ddsMF<-DESeqDataSetFromMatrix(countData= AllCounts,colData= cData,design=~ Batch + Group)
-      
-ddsMF <- DESeq(ddsMF)
-
-resMF <- results(ddsMF)
-```
-
-
-
-========================================================
-
-
-```r
-resMForder<-resMF[order(resMF$padj),]
-head(resMForder)
-```
-
-```
-log2 fold change (MAP): Group Hfd vs Viv 
-Wald test p-value: Group Hfd vs Viv 
-DataFrame with 6 rows and 6 columns
-                     baseMean log2FoldChange     lfcSE      stat
-                    <numeric>      <numeric> <numeric> <numeric>
-ENSMUSG00000024526   465.8790       5.632446 0.2675728  21.05014
-ENSMUSG00000069170   343.9283       3.660275 0.2095060  17.47098
-ENSMUSG00000042041   651.0023       3.017680 0.1744553  17.29772
-ENSMUSG00000067225  6670.8727      -2.885388 0.1685136 -17.12258
-ENSMUSG00000073830 38186.8715      -3.198521 0.1910734 -16.73975
-ENSMUSG00000042248  9297.1517      -2.505672 0.1520039 -16.48426
-                         pvalue         padj
-                      <numeric>    <numeric>
-ENSMUSG00000024526 2.279927e-98 3.612316e-94
-ENSMUSG00000069170 2.383835e-68 1.888474e-64
-ENSMUSG00000042041 4.893461e-67 2.584400e-63
-ENSMUSG00000067225 1.007190e-65 3.989479e-62
-ENSMUSG00000073830 6.726483e-63 2.131488e-59
-ENSMUSG00000042248 4.760644e-61 1.257127e-57
-```
-
-
-========================================================
-
-
-```r
-summary(resMForder)
-```
-
-```
-
-out of 22605 with nonzero total read count
-adjusted p-value < 0.1
-LFC > 0 (up)     : 1156, 5.1% 
-LFC < 0 (down)   : 830, 3.7% 
-outliers [1]     : 0, 0% 
-low counts [2]   : 6761, 30% 
-(mean count < 5)
-[1] see 'cooksCutoff' argument of ?results
-[2] see 'independentFiltering' argument of ?results
-```
-
-
-Likelihood Ratio Test
-========================================================
-
-DESeq2 offers  two  kinds  of  hypothesis  tests: 
-  
-  1. **Wald  test**
-  
-  Uses  the  estimated  standard  error  of a  log2  fold  change  to  test  if  it  is  equal  to  zero.
-
-  2. **Likelihood  ratio  test  (LRT)**
-  
-  The  LRT  examines  two models  for  the  counts,  a full model  with  a  certain  number  of  terms  and  a
-reduced model,  in  which  some  of the terms of the full model are removed.  
-The test determines if the increased likelihood of the data using the extra terms in the full model is more than expected if those extra terms are truly zero.
-
-Likelihood Ratio Test (Continued)
-========================================================
-
-The **LRT** is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor
-at once, or all interactions between two variables.
-
-The likelihood ratio test can be specified using the test argument to DESeq , which substitutes
-nbinomWaldTest with nbinomLRT.  
-
-In  this  case,  the  user  needs  to  provide  a  reduced  formula,  e.g.   one  in  which  a  number  of terms  from design(dds) are  removed.  
-
-
-
-DESeq using LRT
-========================================================
-
-
-```r
-ddsLRT<-DESeqDataSetFromMatrix(countData= AllCounts,colData= cData,design=~ Batch + Group)
-
-# We would like to see the Group effect hence the reduced=~Batch     
-ddsLRT <- DESeq(ddsLRT, test="LRT", 
-                full=~Batch+ Group, 
-                reduced=~Batch)
-
-resLRT<-results(ddsLRT)
-
-resLRTorder<-resLRT[order(resLRT$padj),]
-```
-
-========================================================
-
-
-```r
-head(resLRTorder)
-```
-
-```
-log2 fold change (MLE): Group Hfd vs Viv 
-LRT p-value: '~ Batch + Group' vs '~ Batch' 
-DataFrame with 6 rows and 6 columns
-                     baseMean log2FoldChange     lfcSE      stat
-                    <numeric>      <numeric> <numeric> <numeric>
-ENSMUSG00000024526   465.8790       6.890158 0.3790018  391.0587
-ENSMUSG00000069170   343.9283       4.009157 0.2348178  277.3182
-ENSMUSG00000042041   651.0023       3.214902 0.1865152  269.6467
-ENSMUSG00000067225  6670.8727      -3.058584 0.1782223  250.8243
-ENSMUSG00000042248  9297.1517      -2.619361 0.1589459  240.4491
-ENSMUSG00000078686 40949.7670      -2.818661 0.1706971  236.0012
-                         pvalue         padj
-                      <numeric>    <numeric>
-ENSMUSG00000024526 4.868490e-87 7.713636e-83
-ENSMUSG00000069170 2.884195e-62 2.284859e-58
-ENSMUSG00000042041 1.354930e-60 7.155836e-57
-ENSMUSG00000067225 1.716906e-56 6.800663e-53
-ENSMUSG00000042248 3.138983e-54 9.946811e-51
-ENSMUSG00000078686 2.928523e-53 7.733253e-50
-```
-
-========================================================
-
-
-```r
-summary(resLRTorder)
-```
-
-```
-
-out of 22605 with nonzero total read count
-adjusted p-value < 0.1
-LFC > 0 (up)     : 1143, 5.1% 
-LFC < 0 (down)   : 819, 3.6% 
-outliers [1]     : 0, 0% 
-low counts [2]   : 6761, 30% 
-(mean count < 5)
-[1] see 'cooksCutoff' argument of ?results
-[2] see 'independentFiltering' argument of ?results
-```
-
-
-Interactions
-========================================================
-
-Interaction terms can be added to the design formula, in order to test, for example, if the log2 fold change
-attributable to a given condition is different based on another factor, for example if the condition effect differs across genotype.
-
-A simple approach to study interaction is to perform the following steps:
-
-* Combine the factors of interest into a single factor with all combinations of the original factors
-* Change the design to include just this factor, e.g.  group
-
-
-
-```r
-dds$newgroup <- factor(paste0(dds$Group, dds$Batch))
-design(dds) <- ~ newgroup
-colData(dds)
-```
-
-```
-DataFrame with 6 rows and 5 columns
-         name    Group    Batch sizeFactor newgroup
-     <factor> <factor> <factor>  <numeric> <factor>
-Viv1     Viv1      Viv        a  1.2430187     Viva
-Viv2     Viv2      Viv        b  0.7755226     Vivb
-Viv3     Viv3      Viv        c  1.0501449     Vivc
-Hfd1     Hfd1      Hfd        a  0.9457439     Hfda
-Hfd2     Hfd2      Hfd        b  1.0124687     Hfdb
-Hfd3     Hfd3      Hfd        c  1.0515602     Hfdc
-```
-
-========================================================
-
-
-```r
-dds <- DESeq(dds)
-resultsNames(dds)
-```
-
-```
-[1] "Intercept"    "newgroupHfda" "newgroupHfdb" "newgroupHfdc"
-[5] "newgroupViva" "newgroupVivb" "newgroupVivc"
-```
-
-```r
-results(dds, contrast=c("newgroup", "Viva", "Hfda"))
-```
-
-```
-log2 fold change (MAP): newgroup Viva vs Hfda 
-Wald test p-value: newgroup Viva vs Hfda 
-DataFrame with 37991 rows and 6 columns
-                    baseMean log2FoldChange     lfcSE      stat    pvalue
-                   <numeric>      <numeric> <numeric> <numeric> <numeric>
-ENSMUSG00000090025 0.0000000             NA        NA        NA        NA
-ENSMUSG00000064842 0.0000000             NA        NA        NA        NA
-ENSMUSG00000051951 0.9023015      -0.227423 0.1640807 -1.386044 0.1657335
-ENSMUSG00000089699 0.0000000             NA        NA        NA        NA
-ENSMUSG00000088390 0.0000000             NA        NA        NA        NA
-...                      ...            ...       ...       ...       ...
-ENSMUSG00000052831         0             NA        NA        NA        NA
-ENSMUSG00000069031         0             NA        NA        NA        NA
-ENSMUSG00000071960         0             NA        NA        NA        NA
-ENSMUSG00000091987         0             NA        NA        NA        NA
-ENSMUSG00000090600         0             NA        NA        NA        NA
-                        padj
-                   <numeric>
-ENSMUSG00000090025        NA
-ENSMUSG00000064842        NA
-ENSMUSG00000051951         1
-ENSMUSG00000089699        NA
-ENSMUSG00000088390        NA
-...                      ...
-ENSMUSG00000052831        NA
-ENSMUSG00000069031        NA
-ENSMUSG00000071960        NA
-ENSMUSG00000091987        NA
-ENSMUSG00000090600        NA
-```
-
-
-
-Exercises
-=========================================================
-
-* [RNAseq Exercises](http://mrccsc.github.io/RNAseq_short/course/Exercises_MultifactorAnalysis.html)
-
-Solutions
-=========================================================
-
-* [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_MultifactorAnalysis.html)
-
-
-
 Gene Ontology and Pathway Enrichment Analysis
 ========================================================
 id: go
@@ -1251,12 +949,12 @@ pwf=nullp(degenes,genome="mm9",'ensGene', plot.fit=FALSE)
 
 ```
                    DEgenes bias.data        pwf
-ENSMUSG00000025902       0    3190.5 0.12939698
-ENSMUSG00000033845       1     830.0 0.10226612
-ENSMUSG00000025903       0     938.0 0.10750323
-ENSMUSG00000033813       0    2565.0 0.12939698
-ENSMUSG00000062588       0     604.0 0.08990414
-ENSMUSG00000033793       0    1907.0 0.12904384
+ENSMUSG00000025902       0    3190.5 0.12939700
+ENSMUSG00000033845       1     830.0 0.10226608
+ENSMUSG00000025903       0     938.0 0.10750321
+ENSMUSG00000033813       0    2565.0 0.12939700
+ENSMUSG00000062588       0     604.0 0.08990407
+ENSMUSG00000033793       0    1907.0 0.12904386
 ```
 
 ========================================================
@@ -1266,7 +964,7 @@ ENSMUSG00000033793       0    1907.0 0.12904384
    plotPWF(pwf)
 ```
 
-![plot of chunk unnamed-chunk-45](Practical_ShortRNAseq-figure/unnamed-chunk-45-1.png)
+![plot of chunk unnamed-chunk-34](Practical_ShortRNAseq-figure/unnamed-chunk-34-1.png)
 
 ========================================================
 
@@ -1306,19 +1004,19 @@ head(go)
 
 ```
         category over_represented_pvalue under_represented_pvalue
-10468 GO:0044281            2.768004e-27                        1
-2635  GO:0006082            2.246524e-26                        1
-10150 GO:0043436            3.306546e-25                        1
-6207  GO:0019752            8.356327e-24                        1
-7818  GO:0032787            4.063488e-23                        1
-2988  GO:0006629            1.821882e-19                        1
+10203 GO:0044281            3.496392e-25                        1
+10290 GO:0044710            6.021299e-25                        1
+2670  GO:0006082            7.360366e-25                        1
+9947  GO:0043436            1.253465e-23                        1
+6097  GO:0019752            1.451001e-22                        1
+7731  GO:0032787            7.448528e-22                        1
       numDEInCat numInCat                                  term ontology
-10468        318     1449      small molecule metabolic process       BP
-2635         207      798        organic acid metabolic process       BP
-10150        202      786             oxoacid metabolic process       BP
-6207         190      739     carboxylic acid metabolic process       BP
-7818         140      480 monocarboxylic acid metabolic process       BP
-2988         213      940               lipid metabolic process       BP
+10203        309     1434      small molecule metabolic process       BP
+10290        538     2962     single-organism metabolic process       BP
+2670         197      763        organic acid metabolic process       BP
+9947         192      752             oxoacid metabolic process       BP
+6097         181      706     carboxylic acid metabolic process       BP
+7731         131      448 monocarboxylic acid metabolic process       BP
 ```
 
 ========================================================
@@ -1331,19 +1029,19 @@ head(restemp)
 
 ```
         category over_represented_pvalue under_represented_pvalue
-10468 GO:0044281            2.768004e-27                        1
-2635  GO:0006082            2.246524e-26                        1
-10150 GO:0043436            3.306546e-25                        1
-6207  GO:0019752            8.356327e-24                        1
-7818  GO:0032787            4.063488e-23                        1
-2988  GO:0006629            1.821882e-19                        1
+10203 GO:0044281            3.496392e-25                        1
+10290 GO:0044710            6.021299e-25                        1
+2670  GO:0006082            7.360366e-25                        1
+9947  GO:0043436            1.253465e-23                        1
+6097  GO:0019752            1.451001e-22                        1
+7731  GO:0032787            7.448528e-22                        1
       numDEInCat numInCat                                  term ontology
-10468        318     1449      small molecule metabolic process       BP
-2635         207      798        organic acid metabolic process       BP
-10150        202      786             oxoacid metabolic process       BP
-6207         190      739     carboxylic acid metabolic process       BP
-7818         140      480 monocarboxylic acid metabolic process       BP
-2988         213      940               lipid metabolic process       BP
+10203        309     1434      small molecule metabolic process       BP
+10290        538     2962     single-organism metabolic process       BP
+2670         197      763        organic acid metabolic process       BP
+9947         192      752             oxoacid metabolic process       BP
+6097         181      706     carboxylic acid metabolic process       BP
+7731         131      448 monocarboxylic acid metabolic process       BP
 ```
 
 
@@ -1363,59 +1061,71 @@ Session Information
 ```
 
 ```
-R version 3.3.0 (2016-05-03)
-Platform: x86_64-apple-darwin13.4.0 (64-bit)
-Running under: OS X 10.11.5 (El Capitan)
+R version 3.4.1 (2017-06-30)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS Sierra 10.12.6
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
 
 locale:
 [1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
 
 attached base packages:
-[1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+[1] stats4    parallel  stats     graphics  grDevices utils     datasets 
 [8] methods   base     
 
 other attached packages:
  [1] gplots_3.0.1               pheatmap_1.0.8            
- [3] biomaRt_2.28.0             org.Mm.eg.db_3.3.0        
- [5] KEGG.db_3.2.3              AnnotationDbi_1.34.4      
- [7] ggplot2_2.1.0              RColorBrewer_1.1-2        
- [9] goseq_1.24.0               geneLenDataBase_1.8.0     
-[11] BiasedUrn_1.07             DESeq2_1.12.3             
-[13] SummarizedExperiment_1.2.3 Biobase_2.32.0            
-[15] GenomicRanges_1.24.2       GenomeInfoDb_1.8.3        
-[17] IRanges_2.6.1              S4Vectors_0.10.2          
-[19] BiocGenerics_0.18.0        edgeR_3.14.0              
-[21] limma_3.28.14              knitr_1.13                
+ [3] biomaRt_2.32.1             org.Mm.eg.db_3.4.1        
+ [5] KEGG.db_3.2.3              AnnotationDbi_1.38.2      
+ [7] ggplot2_2.2.1              RColorBrewer_1.1-2        
+ [9] goseq_1.28.0               geneLenDataBase_1.12.0    
+[11] BiasedUrn_1.07             DESeq2_1.16.1             
+[13] SummarizedExperiment_1.6.5 DelayedArray_0.2.7        
+[15] matrixStats_0.52.2         Biobase_2.36.2            
+[17] GenomicRanges_1.28.6       GenomeInfoDb_1.12.2       
+[19] IRanges_2.10.3             S4Vectors_0.14.5          
+[21] BiocGenerics_0.22.0        edgeR_3.18.1              
+[23] limma_3.32.7               knitr_1.17                
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.5             locfit_1.5-9.1         
- [3] lattice_0.20-33         GO.db_3.3.0            
- [5] gtools_3.5.0            Rsamtools_1.24.0       
- [7] Biostrings_2.40.2       digest_0.6.9           
- [9] plyr_1.8.4              chron_2.3-47           
-[11] acepack_1.3-3.3         RSQLite_1.0.0          
-[13] evaluate_0.9            zlibbioc_1.18.0        
-[15] GenomicFeatures_1.24.4  gdata_2.17.0           
-[17] data.table_1.9.6        annotate_1.50.0        
-[19] rpart_4.1-10            Matrix_1.2-6           
-[21] labeling_0.3            splines_3.3.0          
-[23] BiocParallel_1.6.2      geneplotter_1.50.0     
-[25] stringr_1.0.0           foreign_0.8-66         
-[27] RCurl_1.95-4.8          munsell_0.4.3          
-[29] rtracklayer_1.32.1      mgcv_1.8-12            
-[31] nnet_7.3-12             gridExtra_2.2.1        
-[33] codetools_0.2-14        Hmisc_3.17-4           
-[35] XML_3.98-1.4            GenomicAlignments_1.8.4
-[37] bitops_1.0-6            grid_3.3.0             
-[39] nlme_3.1-128            xtable_1.8-2           
-[41] gtable_0.2.0            DBI_0.4-1              
-[43] magrittr_1.5            formatR_1.4            
-[45] scales_0.4.0            KernSmooth_2.23-15     
-[47] stringi_1.1.1           XVector_0.12.0         
-[49] genefilter_1.54.2       latticeExtra_0.6-28    
-[51] Formula_1.2-1           tools_3.3.0            
-[53] survival_2.39-5         colorspace_1.2-6       
-[55] cluster_2.0.4           caTools_1.17.1         
+ [1] bit64_0.9-7              splines_3.4.1           
+ [3] gtools_3.5.0             Formula_1.2-2           
+ [5] highr_0.6                latticeExtra_0.6-28     
+ [7] blob_1.1.0               GenomeInfoDbData_0.99.0 
+ [9] Rsamtools_1.28.0         RSQLite_2.0             
+[11] backports_1.1.1          lattice_0.20-35         
+[13] digest_0.6.12            XVector_0.16.0          
+[15] checkmate_1.8.4          colorspace_1.3-2        
+[17] htmltools_0.3.6          Matrix_1.2-10           
+[19] plyr_1.8.4               pkgconfig_2.0.1         
+[21] XML_3.98-1.9             genefilter_1.58.1       
+[23] zlibbioc_1.22.0          GO.db_3.4.1             
+[25] xtable_1.8-2             scales_0.5.0            
+[27] gdata_2.18.0             BiocParallel_1.10.1     
+[29] htmlTable_1.9            tibble_1.3.4            
+[31] annotate_1.54.0          mgcv_1.8-17             
+[33] GenomicFeatures_1.28.5   nnet_7.3-12             
+[35] lazyeval_0.2.0           survival_2.41-3         
+[37] magrittr_1.5             memoise_1.1.0           
+[39] evaluate_0.10.1          nlme_3.1-131            
+[41] foreign_0.8-69           tools_3.4.1             
+[43] data.table_1.10.4        stringr_1.2.0           
+[45] munsell_0.4.3            locfit_1.5-9.1          
+[47] cluster_2.0.6            Biostrings_2.44.2       
+[49] compiler_3.4.1           caTools_1.17.1          
+[51] rlang_0.1.2              grid_3.4.1              
+[53] RCurl_1.95-4.8           htmlwidgets_0.9         
+[55] bitops_1.0-6             base64enc_0.1-3         
+[57] codetools_0.2-15         gtable_0.2.0            
+[59] DBI_0.7                  GenomicAlignments_1.12.2
+[61] gridExtra_2.3            rtracklayer_1.36.4      
+[63] bit_1.1-12               Hmisc_4.0-3             
+[65] KernSmooth_2.23-15       stringi_1.1.5           
+[67] Rcpp_0.12.13             geneplotter_1.54.0      
+[69] rpart_4.1-11             acepack_1.4.1           
 ```
 
 

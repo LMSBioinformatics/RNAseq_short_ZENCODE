@@ -155,7 +155,7 @@ Check before you carry on again ...
    
    - Interactions?
    
-* In this session, we only discuss the single factor analysis
+* In this session, we will only discuss the single factor analysis
    
    
 
@@ -383,6 +383,7 @@ plotDispEsts(dds)
 
 ```
 
+
 DESeq function - nbinomWaldTest()
 ========================================================
 3- **Hypothesis test for differential expression**
@@ -468,6 +469,7 @@ head(resAnnotated)
 colnames(resAnnotated)[1]<-"ensembl_gene_id"
       
 ```
+
 Add Gene symbol (Continued)
 ========================================================
 
@@ -552,6 +554,13 @@ Solutions
 =========================================================
 
 * [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_BasicDifferentialAnalysis.html)
+
+
+
+Coffee break
+=========================================================
+
+11:30-11:45
 
 
 Transformation of count data
@@ -705,39 +714,6 @@ ggsave(file="PCA_plot_version1.png")
     
 ```
 
-Principal component analysis of the samples 
-========================================================
-
-```{r,eval=TRUE,echo=TRUE}
-
-library(RColorBrewer)
-
-# Creates nice looking color palettes
-showcols <- brewer.pal(8, "Set1")[1:length(unique(colData(dds)$Group))]
-
-data <- plotPCA(rld, intgroup="Group", returnData=TRUE)
-percentVar <- round(100 * attr(data, "percentVar"))
-
-
-```
-
-  attr function gets the named attribute of an object.
-  Here, gets the percent variation from data object.
-
-
-PCA of the samples 
-========================================================
-
-```{r,eval=TRUE,echo=TRUE}
-
-ggplot(data, aes(PC1, PC2,label=colData(dds)$name))+
-  geom_text(col=showcols[colData(dds)$Group],                                                                                                alpha=0.8,size=4)+
-  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
-  ylab(paste0("PC2: ",percentVar[2],"% variance"))
-ggsave(file="PCA_plot_version2.png")
-    
-```
-
 
 Exercises
 =========================================================
@@ -793,154 +769,6 @@ We can use contrasts to compare B vs A, of C vs A, and C vs B.
     summary(res_contrast)
       
 ```
-
-
-
-
-Multi factor designs
-========================================================
-Experiments  with  more  than  one  factor  influencing  the  counts  can  be  analyzed  using  design  formula  that  include  the  additional  variables. 
-
-```{r,eval=TRUE,echo=TRUE}
-targets
-
-```
-
-
-
-========================================================
-
-```{r,eval=TRUE,echo=TRUE}
-      
-ddsMF<-DESeqDataSetFromMatrix(countData= AllCounts,colData= cData,design=~ Batch + Group)
-      
-ddsMF <- DESeq(ddsMF)
-
-resMF <- results(ddsMF)
-
-```
-
-
-
-========================================================
-
-```{r,eval=TRUE,echo=TRUE}
-
-resMForder<-resMF[order(resMF$padj),]
-head(resMForder)
-
-```
-
-
-========================================================
-
-```{r,eval=TRUE,echo=TRUE}
-summary(resMForder)
-```
-
-
-Likelihood Ratio Test
-========================================================
-
-DESeq2 offers  two  kinds  of  hypothesis  tests: 
-  
-  1. **Wald  test**
-  
-  Uses  the  estimated  standard  error  of a  log2  fold  change  to  test  if  it  is  equal  to  zero.
-
-  2. **Likelihood  ratio  test  (LRT)**
-  
-  The  LRT  examines  two models  for  the  counts,  a full model  with  a  certain  number  of  terms  and  a
-reduced model,  in  which  some  of the terms of the full model are removed.  
-The test determines if the increased likelihood of the data using the extra terms in the full model is more than expected if those extra terms are truly zero.
-
-Likelihood Ratio Test (Continued)
-========================================================
-
-The **LRT** is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor
-at once, or all interactions between two variables.
-
-The likelihood ratio test can be specified using the test argument to DESeq , which substitutes
-nbinomWaldTest with nbinomLRT.  
-
-In  this  case,  the  user  needs  to  provide  a  reduced  formula,  e.g.   one  in  which  a  number  of terms  from design(dds) are  removed.  
-
-
-
-DESeq using LRT
-========================================================
-
-```{r,eval=TRUE,echo=TRUE,message=FALSE,results='hide',warning=FALSE}
-
-ddsLRT<-DESeqDataSetFromMatrix(countData= AllCounts,colData= cData,design=~ Batch + Group)
-
-# We would like to see the Group effect hence the reduced=~Batch     
-ddsLRT <- DESeq(ddsLRT, test="LRT", 
-                full=~Batch+ Group, 
-                reduced=~Batch)
-
-resLRT<-results(ddsLRT)
-
-resLRTorder<-resLRT[order(resLRT$padj),]
-
-```
-
-========================================================
-
-```{r,eval=TRUE,echo=TRUE}
-head(resLRTorder)
-
-```
-
-========================================================
-
-```{r,eval=TRUE,echo=TRUE}
-summary(resLRTorder)
-
-
-```
-
-
-Interactions
-========================================================
-
-Interaction terms can be added to the design formula, in order to test, for example, if the log2 fold change
-attributable to a given condition is different based on another factor, for example if the condition effect differs across genotype.
-
-A simple approach to study interaction is to perform the following steps:
-
-* Combine the factors of interest into a single factor with all combinations of the original factors
-* Change the design to include just this factor, e.g.  group
-
-
-```{r,eval=TRUE,echo=TRUE}
-
-dds$newgroup <- factor(paste0(dds$Group, dds$Batch))
-design(dds) <- ~ newgroup
-colData(dds)
-
-```
-
-========================================================
-
-```{r,eval=TRUE,echo=TRUE}
-dds <- DESeq(dds)
-resultsNames(dds)
-results(dds, contrast=c("newgroup", "Viva", "Hfda"))
-
-```
-
-
-
-Exercises
-=========================================================
-
-* [RNAseq Exercises](http://mrccsc.github.io/RNAseq_short/course/Exercises_MultifactorAnalysis.html)
-
-Solutions
-=========================================================
-
-* [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_MultifactorAnalysis.html)
 
 
 
