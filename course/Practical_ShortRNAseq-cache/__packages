@@ -21,3 +21,5 @@ org.Mm.eg.db
 biomaRt
 pheatmap
 gplots
+matrixStats
+DelayedArray
