@@ -98,6 +98,16 @@ Check before you carry on ...
   - Useful to distinguish sense and antisense transcripts  
 
 
+unstranded RNAseq
+========================================================
+
+<div align="center">
+<img src="figures/Stranded_non.png" height="700" width="950">
+</div>
+
+Masp2 (sense) and Tardbp (antisense)
+
+fr-firststrand RNAseq
 ========================================================
 
 <div align="center">
@@ -641,10 +651,10 @@ plotCounts(dds,gene=which.min(res$padj),intgroup="Group")
 
 ![plot of chunk unnamed-chunk-23](Practical_ShortRNAseq-figure/unnamed-chunk-23-1.png)
 
-
-
-Exercises
+Coffee break and Exercise
 =========================================================
+
+11:30-11:45
 
 * [RNAseq Exercises](http://mrccsc.github.io/RNAseq_short/course/Exercise_BasicDifferentialAnalysis.html)
 
@@ -653,12 +663,6 @@ Solutions
 
 * [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_BasicDifferentialAnalysis.html)
 
-
-
-Coffee break
-=========================================================
-
-11:30-11:45
 
 
 Transformation of count data
