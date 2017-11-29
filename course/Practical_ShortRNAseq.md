@@ -824,18 +824,6 @@ library(ggplot2)
 ggsave(file="PCA_plot_version1.png")
 ```
 
-
-Exercises
-=========================================================
-
-* [RNAseq Exercises](http://mrccsc.github.io/RNAseq_short/course/Exercises_Visualization.html)
-
-Solutions
-=========================================================
-
-* [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_Visualization.html)
-
-
 Variations to standard workflow
 ========================================================
 
@@ -888,6 +876,20 @@ low counts [2]   : 5493, 24%
 [1] see 'cooksCutoff' argument of ?results
 [2] see 'independentFiltering' argument of ?results
 ```
+
+
+
+Exercises
+=========================================================
+
+* [RNAseq Exercises](http://mrccsc.github.io/RNAseq_short/course/Exercises_Visualization.html)
+
+Solutions
+=========================================================
+
+* [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_Visualization.html)
+
+
 
 
 

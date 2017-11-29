@@ -718,18 +718,6 @@ ggsave(file="PCA_plot_version1.png")
     
 ```
 
-
-Exercises
-=========================================================
-
-* [RNAseq Exercises](http://mrccsc.github.io/RNAseq_short/course/Exercises_Visualization.html)
-
-Solutions
-=========================================================
-
-* [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_Visualization.html)
-
-
 Variations to standard workflow
 ========================================================
 
@@ -773,6 +761,20 @@ We can use contrasts to compare B vs A, of C vs A, and C vs B.
     summary(res_contrast)
       
 ```
+
+
+
+Exercises
+=========================================================
+
+* [RNAseq Exercises](http://mrccsc.github.io/RNAseq_short/course/Exercises_Visualization.html)
+
+Solutions
+=========================================================
+
+* [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_Visualization.html)
+
+
 
 
 
