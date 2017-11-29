@@ -6,7 +6,7 @@ opts_chunk$set(cache=TRUE)
 Analysis of RNAseq data
 ========================================================
 author:MRC LMS Bioinformatics Core
-date:http://mrccsc.github.io/RNAseq_short/
+date: 30 November 2017
 width: 1440
 height: 1100
 autosize: true
@@ -42,7 +42,7 @@ Contents
 * [Read counting](#/counting).
 * [Differential gene expression analysis](#/de).
 * [Exploring and saving results](#/explore).
-* [Gene ontology and pathway enrichment analysis](#/go).
+
 
 
 Quality Assessment - FastQC (1/2)
@@ -62,7 +62,7 @@ Quality Assessment - FastQC (2/2)
 </div>
 
 
-Read alignment - gapped alinger (1/2)
+Read alignment - gapped aligner (1/2)
 ====================================
 id: alignment
 
@@ -77,7 +77,7 @@ For RNASeq data alignment, aligner need to be able to align across the exon-exon
 * Garber et al., 2011. Nat Methods. 8(6):469-77. Table 1
 
 
-Read alignment - gapped alinger (2/2)
+Read alignment - gapped aligner (2/2)
 ====================================
 
 <div align="center">
@@ -182,7 +182,7 @@ Set working directory
 ========================================================
 
 Before running any of the code, we need to set the working directory to the folder we unarchived. 
-You may navigate to the unarchived RNAseq_short/course folder in the Rstudio menu
+You may navigate to the unarchived RNAseq_short_ZENCODE/course folder in the Rstudio menu
 
 **Session -> Set Working Directory -> Choose Directory**
 
@@ -200,8 +200,8 @@ Use setwd() to set up your directory in the console
 
 ```{r,eval=F} 
 
-#setwd("/PathToMyDownload/RNAseq_short_ZENCODE/course")
-setwd("/Users/yfwang/project/workshop/RNAseq_short_ZENCODE/course")
+setwd("/PathToMyDownload/RNAseq_short_ZENCODE/course")
+
 
 ```
 
@@ -776,137 +776,4 @@ We can use contrasts to compare B vs A, of C vs A, and C vs B.
 
 
 
-Gene Ontology and Pathway Enrichment Analysis
-========================================================
-id: go
 
-We will perform GO analysis using goseq package.
-
- In order to perform a GO analysis of your RNA-seq data,goseq only requires a simple named vector, which contains two pieces of information.
-
-1 **Measured genes**
-   
- all genes for which RNA-seq data was gathered for your experiment.  Each element of your vector should be named by a unique gene identifier.
-
-2 **Differentially expressed genes**
-   
- each element of your vector should be either a 1 or 0, where 1 indicates that the gene is differentially expressed and 0 that it is not.
-
-
-========================================================
-
-```{r,eval=TRUE,echo=TRUE}
-
-library(KEGG.db)
-library(goseq)
-
-# remove the NAs
-
-resdat<- res[complete.cases(res$padj),]
- 
-degenes<-as.integer(resdat$padj<0.05)
-names(degenes)<-rownames(resdat)
-    
-# remove duplicate gene names
-degenes<-degenes[match(unique(names(degenes)),                                                                                              names(degenes))]
-
-table(degenes)
-```
-
-
-========================================================
-
-**Fitting the probability weighting function (PWF)**
-
-We first need to obtain a weighting for each gene, 
-depending on its length, given by the PWF
-
-
-```{r,eval=TRUE,echo=TRUE}                         
-
-  
-pwf=nullp(degenes,genome="mm9",'ensGene', plot.fit=FALSE)
-  
-  head(pwf)
-```
-
-========================================================
-
-```{r,eval=TRUE,echo=TRUE}
-   plotPWF(pwf)
-```
-
-========================================================
-
-Change the Keggpath id to name in the goseq output
-
-```{r,eval=TRUE,echo=TRUE}
-
-                              
-xx <- as.list(KEGGPATHID2NAME)
-temp <- cbind(names(xx),unlist(xx))
-    
-addKeggTogoseq <- function(JX,temp){
-  for(l in 1:nrow(JX)){
-      if(JX[l,1] %in% temp[,1]){
-          JX[l,"term"] <- temp[temp[,1] %in% JX[l,1],2]
-          JX[l,"ontology"] <- "KEGG"
-      }
-  }
-  return(JX)
-}
-```
-
-========================================================
-
- Calculate  the  over  and  under  expressed  GO
-categories among DE genes
-
-```{r,eval=TRUE,echo=TRUE}
-    
-
-go<-goseq(pwf,genome="mm9",'ensGene', test.cats=c("GO:BP","GO:MF","KEGG"))
-  
-```
-
-========================================================
-```{r,eval=TRUE,echo=TRUE}
-head(go)
-
-```
-
-========================================================
-```{r,eval=TRUE,echo=TRUE}
-
-restemp<-addKeggTogoseq(go,temp)   
-
-head(restemp)
-    
-```
-
-
-========================================================
-```{r,eval=TRUE,echo=TRUE}
-write.table(restemp,file="GO_Kegg_Wallenius.txt", row.names=F,sep="\t")
-
-write.csv(restemp,file="GO_Kegg_Wallenius.csv", row.names=F)
-                              
-```
-
-Session Information
-========================================================
-```{r,eval=TRUE,echo=TRUE}
-    sessionInfo()
-```
-
-
-Exercises
-=========================================================
-
-* [RNAseq Exercises](http://mrccsc.github.io/RNAseq_short/course/Exercise_FunctionalAnalysis.html)
-
-
-Solutions
-=========================================================
-
-* [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_FunctionalAnalysis.html)

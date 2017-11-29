@@ -4,7 +4,7 @@
 Analysis of RNAseq data
 ========================================================
 author:MRC LMS Bioinformatics Core
-date:http://mrccsc.github.io/RNAseq_short/
+date: 30 November 2017
 width: 1440
 height: 1100
 autosize: true
@@ -40,7 +40,7 @@ Contents
 * [Read counting](#/counting).
 * [Differential gene expression analysis](#/de).
 * [Exploring and saving results](#/explore).
-* [Gene ontology and pathway enrichment analysis](#/go).
+
 
 
 Quality Assessment - FastQC (1/2)
@@ -60,7 +60,7 @@ Quality Assessment - FastQC (2/2)
 </div>
 
 
-Read alignment - gapped alinger (1/2)
+Read alignment - gapped aligner (1/2)
 ====================================
 id: alignment
 
@@ -75,7 +75,7 @@ For RNASeq data alignment, aligner need to be able to align across the exon-exon
 * Garber et al., 2011. Nat Methods. 8(6):469-77. Table 1
 
 
-Read alignment - gapped alinger (2/2)
+Read alignment - gapped aligner (2/2)
 ====================================
 
 <div align="center">
@@ -180,7 +180,7 @@ Set working directory
 ========================================================
 
 Before running any of the code, we need to set the working directory to the folder we unarchived. 
-You may navigate to the unarchived RNAseq_short/course folder in the Rstudio menu
+You may navigate to the unarchived RNAseq_short_ZENCODE/course folder in the Rstudio menu
 
 **Session -> Set Working Directory -> Choose Directory**
 
@@ -197,8 +197,7 @@ Use setwd() to set up your directory in the console
 
 
 ```r
-#setwd("/PathToMyDownload/RNAseq_short_ZENCODE/course")
-setwd("/Users/yfwang/project/workshop/RNAseq_short_ZENCODE/course")
+setwd("/PathToMyDownload/RNAseq_short_ZENCODE/course")
 ```
 
 
@@ -892,254 +891,4 @@ low counts [2]   : 5493, 24%
 
 
 
-Gene Ontology and Pathway Enrichment Analysis
-========================================================
-id: go
 
-We will perform GO analysis using goseq package.
-
- In order to perform a GO analysis of your RNA-seq data,goseq only requires a simple named vector, which contains two pieces of information.
-
-1 **Measured genes**
-   
- all genes for which RNA-seq data was gathered for your experiment.  Each element of your vector should be named by a unique gene identifier.
-
-2 **Differentially expressed genes**
-   
- each element of your vector should be either a 1 or 0, where 1 indicates that the gene is differentially expressed and 0 that it is not.
-
-
-========================================================
-
-
-```r
-library(KEGG.db)
-library(goseq)
-
-# remove the NAs
-
-resdat<- res[complete.cases(res$padj),]
- 
-degenes<-as.integer(resdat$padj<0.05)
-names(degenes)<-rownames(resdat)
-    
-# remove duplicate gene names
-degenes<-degenes[match(unique(names(degenes)),                                                                                              names(degenes))]
-
-table(degenes)
-```
-
-```
-degenes
-    0     1 
-15124  1970 
-```
-
-
-========================================================
-
-**Fitting the probability weighting function (PWF)**
-
-We first need to obtain a weighting for each gene, 
-depending on its length, given by the PWF
-
-
-
-```r
-pwf=nullp(degenes,genome="mm9",'ensGene', plot.fit=FALSE)
-  
-  head(pwf)
-```
-
-```
-                   DEgenes bias.data        pwf
-ENSMUSG00000025902       0    3190.5 0.12939700
-ENSMUSG00000033845       1     830.0 0.10226608
-ENSMUSG00000025903       0     938.0 0.10750321
-ENSMUSG00000033813       0    2565.0 0.12939700
-ENSMUSG00000062588       0     604.0 0.08990407
-ENSMUSG00000033793       0    1907.0 0.12904386
-```
-
-========================================================
-
-
-```r
-   plotPWF(pwf)
-```
-
-![plot of chunk unnamed-chunk-34](Practical_ShortRNAseq-figure/unnamed-chunk-34-1.png)
-
-========================================================
-
-Change the Keggpath id to name in the goseq output
-
-
-```r
-xx <- as.list(KEGGPATHID2NAME)
-temp <- cbind(names(xx),unlist(xx))
-    
-addKeggTogoseq <- function(JX,temp){
-  for(l in 1:nrow(JX)){
-      if(JX[l,1] %in% temp[,1]){
-          JX[l,"term"] <- temp[temp[,1] %in% JX[l,1],2]
-          JX[l,"ontology"] <- "KEGG"
-      }
-  }
-  return(JX)
-}
-```
-
-========================================================
-
- Calculate  the  over  and  under  expressed  GO
-categories among DE genes
-
-
-```r
-go<-goseq(pwf,genome="mm9",'ensGene', test.cats=c("GO:BP","GO:MF","KEGG"))
-```
-
-========================================================
-
-```r
-head(go)
-```
-
-```
-        category over_represented_pvalue under_represented_pvalue
-10203 GO:0044281            3.496392e-25                        1
-10290 GO:0044710            6.021299e-25                        1
-2670  GO:0006082            7.360366e-25                        1
-9947  GO:0043436            1.253465e-23                        1
-6097  GO:0019752            1.451001e-22                        1
-7731  GO:0032787            7.448528e-22                        1
-      numDEInCat numInCat                                  term ontology
-10203        309     1434      small molecule metabolic process       BP
-10290        538     2962     single-organism metabolic process       BP
-2670         197      763        organic acid metabolic process       BP
-9947         192      752             oxoacid metabolic process       BP
-6097         181      706     carboxylic acid metabolic process       BP
-7731         131      448 monocarboxylic acid metabolic process       BP
-```
-
-========================================================
-
-```r
-restemp<-addKeggTogoseq(go,temp)   
-
-head(restemp)
-```
-
-```
-        category over_represented_pvalue under_represented_pvalue
-10203 GO:0044281            3.496392e-25                        1
-10290 GO:0044710            6.021299e-25                        1
-2670  GO:0006082            7.360366e-25                        1
-9947  GO:0043436            1.253465e-23                        1
-6097  GO:0019752            1.451001e-22                        1
-7731  GO:0032787            7.448528e-22                        1
-      numDEInCat numInCat                                  term ontology
-10203        309     1434      small molecule metabolic process       BP
-10290        538     2962     single-organism metabolic process       BP
-2670         197      763        organic acid metabolic process       BP
-9947         192      752             oxoacid metabolic process       BP
-6097         181      706     carboxylic acid metabolic process       BP
-7731         131      448 monocarboxylic acid metabolic process       BP
-```
-
-
-========================================================
-
-```r
-write.table(restemp,file="GO_Kegg_Wallenius.txt", row.names=F,sep="\t")
-
-write.csv(restemp,file="GO_Kegg_Wallenius.csv", row.names=F)
-```
-
-Session Information
-========================================================
-
-```r
-    sessionInfo()
-```
-
-```
-R version 3.4.1 (2017-06-30)
-Platform: x86_64-apple-darwin15.6.0 (64-bit)
-Running under: macOS Sierra 10.12.6
-
-Matrix products: default
-BLAS: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRblas.0.dylib
-LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
-
-locale:
-[1] en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/en_GB.UTF-8
-
-attached base packages:
-[1] stats4    parallel  stats     graphics  grDevices utils     datasets 
-[8] methods   base     
-
-other attached packages:
- [1] gplots_3.0.1               pheatmap_1.0.8            
- [3] biomaRt_2.32.1             org.Mm.eg.db_3.4.1        
- [5] KEGG.db_3.2.3              AnnotationDbi_1.38.2      
- [7] ggplot2_2.2.1              RColorBrewer_1.1-2        
- [9] goseq_1.28.0               geneLenDataBase_1.12.0    
-[11] BiasedUrn_1.07             DESeq2_1.16.1             
-[13] SummarizedExperiment_1.6.5 DelayedArray_0.2.7        
-[15] matrixStats_0.52.2         Biobase_2.36.2            
-[17] GenomicRanges_1.28.6       GenomeInfoDb_1.12.2       
-[19] IRanges_2.10.3             S4Vectors_0.14.5          
-[21] BiocGenerics_0.22.0        edgeR_3.18.1              
-[23] limma_3.32.7               knitr_1.17                
-
-loaded via a namespace (and not attached):
- [1] bit64_0.9-7              splines_3.4.1           
- [3] gtools_3.5.0             Formula_1.2-2           
- [5] highr_0.6                latticeExtra_0.6-28     
- [7] blob_1.1.0               GenomeInfoDbData_0.99.0 
- [9] Rsamtools_1.28.0         RSQLite_2.0             
-[11] backports_1.1.1          lattice_0.20-35         
-[13] digest_0.6.12            XVector_0.16.0          
-[15] checkmate_1.8.4          colorspace_1.3-2        
-[17] htmltools_0.3.6          Matrix_1.2-10           
-[19] plyr_1.8.4               pkgconfig_2.0.1         
-[21] XML_3.98-1.9             genefilter_1.58.1       
-[23] zlibbioc_1.22.0          GO.db_3.4.1             
-[25] xtable_1.8-2             scales_0.5.0            
-[27] gdata_2.18.0             BiocParallel_1.10.1     
-[29] htmlTable_1.9            tibble_1.3.4            
-[31] annotate_1.54.0          mgcv_1.8-17             
-[33] GenomicFeatures_1.28.5   nnet_7.3-12             
-[35] lazyeval_0.2.0           survival_2.41-3         
-[37] magrittr_1.5             memoise_1.1.0           
-[39] evaluate_0.10.1          nlme_3.1-131            
-[41] foreign_0.8-69           tools_3.4.1             
-[43] data.table_1.10.4        stringr_1.2.0           
-[45] munsell_0.4.3            locfit_1.5-9.1          
-[47] cluster_2.0.6            Biostrings_2.44.2       
-[49] compiler_3.4.1           caTools_1.17.1          
-[51] rlang_0.1.2              grid_3.4.1              
-[53] RCurl_1.95-4.8           htmlwidgets_0.9         
-[55] bitops_1.0-6             base64enc_0.1-3         
-[57] codetools_0.2-15         gtable_0.2.0            
-[59] DBI_0.7                  GenomicAlignments_1.12.2
-[61] gridExtra_2.3            rtracklayer_1.36.4      
-[63] bit_1.1-12               Hmisc_4.0-3             
-[65] KernSmooth_2.23-15       stringi_1.1.5           
-[67] Rcpp_0.12.13             geneplotter_1.54.0      
-[69] rpart_4.1-11             acepack_1.4.1           
-```
-
-
-Exercises
-=========================================================
-
-* [RNAseq Exercises](http://mrccsc.github.io/RNAseq_short/course/Exercise_FunctionalAnalysis.html)
-
-
-Solutions
-=========================================================
-
-* [RNAseq Solutions](http://mrccsc.github.io/RNAseq_short/course/Answers_FunctionalAnalysis.html)
